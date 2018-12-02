@@ -5,6 +5,7 @@ using namespace std;
 int SUM;
 int a[10][10];
 int sum = 0;
+int kind;
 int N;//代表输出的数独矩阵个数 
 FILE* fp1, *fp2;
 void Input(int a[][10]);
@@ -14,12 +15,13 @@ void TraceBack(int n);
 
 int main(int   argc, char*   argv[])
 {
-	
-	errno_t err1 , err2;
+	int N = 0;
+	errno_t  err2;
 	memset(a, 0, sizeof(a));
 
 	if (strcmp(argv[1], "-c") == 0)
 	{
+		kind = 1;
 		if (argc != 3)
 		{
 			cout << "命令输入错误，请输入想要的终局数" << endl;
@@ -50,6 +52,7 @@ int main(int   argc, char*   argv[])
 	else
 		if (strcmp(argv[1], "-s") == 0)
 		{
+
 			if (argc != 3)
 			{
 				cout << "命令输入错误，请输入输出路径" << endl;
@@ -57,16 +60,23 @@ int main(int   argc, char*   argv[])
 			}
 
 			SUM = 1;
-			err1 = fopen_s(&fp1, argv[2], "r");
-			if (err1 != 0)
+			if (fopen_s(&fp1, argv[2], "r") != 0)
 			{
 				cout << "路径错误" << endl;
 				return 0;
 			}
 			err2 = fopen_s(&fp2, "sudoku.txt", "w");
-			Input(a);
-			TraceBack(0);
-			Output(a);
+			if (fp1 != 0)
+			{
+				do
+				{
+					memset(a, 0, sizeof(a));
+					kind = 2;
+					Input(a);
+					TraceBack(0);
+				} while (fgetc(fp1) == '\n');
+			}
+
 			cout << "解数独完成" << endl;
 			if (fp1 != 0)
 			{
@@ -83,7 +93,6 @@ int main(int   argc, char*   argv[])
 			return 0;
 		}
 
-	system("PAUSE");
 	return 0;
 }
 
@@ -94,7 +103,7 @@ void Input(int a[][10])
 		for (int j = 0; j < 9; j++)
 		{
 			temp = fgetc(fp1);
-			if (temp == ' ' || temp == '\n')
+			while (temp == ' ' || temp == '\n')
 			{
 				temp = fgetc(fp1);
 			}
@@ -108,19 +117,28 @@ void Input(int a[][10])
 }
 void Output(int a[][10])
 {
-
+	if (N != 0)
+	{
+		fputc('\n', fp2);
+		fputc('\n', fp2);
+	}
+	else 
+	{
+		N++;
+	}
 	for (int i = 0; i < 9; i++)
 	{
 		for (int j = 0; j < 8; j++)
 		{
-			fputc(a[i][j]+'0', fp2);
+			fputc(a[i][j] + '0', fp2);
 			fputc(' ', fp2);
 		}
 		fputc(a[i][8] + '0', fp2);
-		fputc('\n', fp2);
+		if (i != 8)
+		{
+			fputc('\n', fp2);
+		}
 	}
-	fputc('\n', fp2);
-
 }
 
 int check_num(int a[][10], int i, int j, int num)
@@ -154,13 +172,21 @@ int check_num(int a[][10], int i, int j, int num)
 
 void TraceBack(int n)
 {
-	if (sum > SUM - 1)
+	if (sum > SUM - 1 && kind == 1)
 	{
 		exit(0);
+	}
+	if (kind == 3)
+	{
+		return;
 	}
 
 	if (n > 80)
 	{
+		if (kind == 2)
+		{
+			kind = 3;
+		}
 		sum++;
 		Output(a);
 		return;
