@@ -12,6 +12,9 @@ void Input(int a[][10]);
 void Output(int a[][10]);
 int check_num(int a[][10], int i, int j, int num);
 void TraceBack(int n);
+void arrange();
+void Swap();
+void SwapColumn();
 
 int main(int   argc, char*   argv[])
 {
@@ -42,7 +45,6 @@ int main(int   argc, char*   argv[])
 		SUM = atoi(argv[2]);
 		a[0][0] = (5 + 4) % 9 + 1;//学号后两位54 
 		TraceBack(1);//
-		Output(a);
 		cout << "终局生成完毕" << endl;
 		if (fp2 != 0)
 		{
@@ -92,7 +94,6 @@ int main(int   argc, char*   argv[])
 			cout << "命令输入错误，只能是-c或-s" << endl;
 			return 0;
 		}
-
 	return 0;
 }
 
@@ -122,7 +123,7 @@ void Output(int a[][10])
 		fputc('\n', fp2);
 		fputc('\n', fp2);
 	}
-	else 
+	else
 	{
 		N++;
 	}
@@ -172,27 +173,29 @@ int check_num(int a[][10], int i, int j, int num)
 
 void TraceBack(int n)
 {
-	if (sum > SUM - 1 && kind == 1)
+	//kind = 1代表输入为-c，也就是生成数独
+	//kind = 2代表输入-s，也就是解数独
+	//kind = 3代表解完或生成完毕 
+	if (sum > SUM && kind == 1)
 	{
-		exit(0);
+		kind = 3;
 	}
 	if (kind == 3)
 	{
 		return;
 	}
 
-	if (n > 80)
+	if (n > 80)//代表解完当前棋盘
 	{
 		if (kind == 2)
 		{
 			kind = 3;
 		}
-		sum++;
-		Output(a);
+		arrange();//进行排列组合并输出
 		return;
 	}
 
-	if (a[n / 9][n % 9] != 0)
+	if (a[n / 9][n % 9] != 0)//当前格子有数字，不允许更改，直接跳到下一格
 	{
 		TraceBack(n + 1);
 	}
@@ -208,6 +211,97 @@ void TraceBack(int n)
 			}
 			a[n / 9][n % 9] = temp;
 		}
+	}
+}
+
+void SwapColumn(int i, int j)
+{
+	for (int k = 0; k < 9; k++)
+	{
+		int temp = a[k][i];
+		a[k][i] = a[k][j];
+		a[k][j] = temp;
+	}
+}
+
+void Swap(int n, int m)//n为开始交换的列 如n=3代表345列 n=6代表678列 m=0-5 为3列排列组合的6种方式
+{
+	if (m == 0)
+	{
+		return;
+	}
+	if (m == 1)
+	{
+		SwapColumn(n, n + 1);
+		return;
+	}
+	if (m == 2)
+	{
+		SwapColumn(n, n + 2);
+		return;
+	}
+	if (m == 3)
+	{
+		SwapColumn(n + 2, n + 1);
+		return;
+	}
+	if (m == 4)
+	{
+		SwapColumn(n, n + 1);
+		SwapColumn(n + 1, n + 2);
+		return;
+	}
+	if (m == 5)
+	{
+		SwapColumn(n + 2, n + 1);
+		SwapColumn(n + 1, n);
+		return;
+	}
+
+}
+
+void arrange()
+{
+	for (int i = 0; i < 6; i++)
+	{
+		Swap(3, i);
+		for (int j = 0; j < 6; j++)
+		{
+			Swap(6, j);
+			sum++;
+			if (sum > SUM)
+			{
+				return;
+			}
+			Output(a);
+			//后面都是还原
+			if (j == 5)
+			{
+				Swap(6, 4);
+			}
+			else
+				if (j == 4)
+				{
+					Swap(6, 5);
+				}
+				else
+				{
+					Swap(6, j);
+				}
+		}
+		if (i == 4)
+		{
+			Swap(3, 5);
+		}
+		else
+			if (i == 5)
+			{
+				Swap(3, 4);
+			}
+			else
+			{
+				Swap(3, i);
+			}
 	}
 }
 
